@@ -4,20 +4,23 @@ import { Container } from "react-bootstrap";
 import { Route, Switch } from "react-router-dom";
 import "./api/axiosDefault";
 import SignUpForm from "./pages/auth/SignUpForm";
+import SignInForm from "./pages/auth/SignInForm";
+
 
 function App() {
-  return (
-    <div className={styles.App}>
-      <NavBar />
-      <Container className={styles.Main}>
-        <Switch>
-          <Route exact path="/" render={() => <h1>Home page</h1>} />
-          <Route exact path="/signin" render={() => <h1>Sign in</h1>} />
-          <Route exact path="/signup" render={() => <SignUpForm />} />
-          <Route render={() => <h1> Page not found</h1>} />
-        </Switch>
-      </Container>
-    </div>
+  
+  return (    
+        <div className={styles.App}>
+          <NavBar />
+          <Container className={styles.Main}>
+            <Switch>
+              <Route exact path="/" render={() => <h1>Home page</h1>} />
+              <Route exact path="/signin" render={() => <SignInForm />} />
+              <Route exact path="/signup" render={() => <SignUpForm />} />
+              <Route render={() => <p>Page not found!</p>} />
+            </Switch>
+          </Container>
+        </div>     
   );
 }
 
