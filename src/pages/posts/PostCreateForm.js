@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
+import Alert from "react-bootstrap/Alert";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -13,12 +14,14 @@ import styles from "../../components/styles/PostCreateEditForm.module.css";
 import appStyles from "../../App.module.css";
 import btnStyles from "../../components/styles/Button.module.css";
 import Asset from "../../components/Asset";
+import { axiosReq } from "../../api/axiosDefault";
+import { useHistory } from "react-router";
 
 function PostCreateForm() {
   const [errors, setErrors] = useState({});
   const [postData, setPostData] = useState({
     title: "",
-    Content: "",
+    content: "",
     image: "",
   });
 
@@ -27,7 +30,7 @@ function PostCreateForm() {
   const handleChange = (event) => {
     setPostData({
       ...postData,
-      [event.taget.name]: event.taget.value,
+      [event.target.name]: event.target.value,
     });
   };
 
@@ -41,13 +44,38 @@ function PostCreateForm() {
     }
   };
 
+  // Reference to the component with a image file : Form.File
+  const imageInput = useRef(null);
+  const history = useHistory();
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formData = new FormData();
+
+    formData.append("title", title);
+    formData.append("content", content);
+    formData.append("image", imageInput.current.files[0]);
+
+    try {
+      const { data } = await axiosReq.post("/posts/", formData);
+      history.push(`/post/${data.id}`);
+    } catch (err) {
+      console.log(err);
+      if (err.response?.status !== 401) {
+        setErrors(err.response?.data);
+      }
+    }
+  };
+
   const textFields = (
     <div className="text-center">
       {/* Add your form fields here */}
 
       <Button
         className={`${btnStyles.Button} ${btnStyles.Blue}`}
-        onClick={() => {}}
+        onClick={() => {
+          history.goBack();
+        }}
       >
         cancel
       </Button>
@@ -58,7 +86,7 @@ function PostCreateForm() {
   );
 
   return (
-    <Form>
+    <Form onSubmit={handleSubmit}>
       <Row>
         <Col className="py-2 p-0 p-md-2" md={7} lg={8}>
           <Container
@@ -74,9 +102,13 @@ function PostCreateForm() {
                   onChange={handleChange}
                 />
               </Form.Group>
-
+              {errors?.title?.map((message, idx) => (
+                <Alert key={idx} variant="warning">
+                  {message}
+                </Alert>
+              ))}
               <Form.Group>
-                 {/* NOTE : the Lables below have the htmlFor attribute that is assigned
+                {/* NOTE : the Lables below have the htmlFor attribute that is assigned
                     to "image-upload". Meaning, if those components get clicked on
                     the onChange - event handler of the Form.File compoenent down below 
                     will be executed. Because the Form.File has the id="image-upload".
@@ -114,8 +146,13 @@ function PostCreateForm() {
                   id="image-upload"
                   accept="image/*"
                   onChange={handleChangeImage}
+                  ref={imageInput}
                 />
-
+                {errors?.image?.map((message, idx) => (
+                  <Alert key={idx} variant="warning">
+                    {message}
+                  </Alert>
+                ))}
                 <Form.Label>Content</Form.Label>
                 <Form.Control
                   as="textarea"
@@ -125,6 +162,11 @@ function PostCreateForm() {
                   onChange={handleChange}
                 />
               </Form.Group>
+              {errors?.content?.map((message, idx) => (
+                <Alert key={idx} variant="warning">
+                  {message}
+                </Alert>
+              ))}
             </Form.Group>
             <div className="d-md-none">{textFields}</div>
           </Container>
